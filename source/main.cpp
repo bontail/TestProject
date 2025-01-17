@@ -27,7 +27,7 @@ void printAnswer(const vector<pair<int64_t, int64_t> > &answer) {
     cout << '.' << endl;
 }
 
-void buildGraph(int64_t lines, int64_t columns, vector<int64_t> &weight, vector<vector<int64_t> > &graph) {
+void buildGraph(int64_t lines, int64_t columns, vector<int8_t> &weight, vector<vector<int64_t> > &graph) {
     for (int64_t i = 0; i < lines; ++i) {
         for (int64_t j = 0; j < columns; ++j) {
             int64_t currentIndex = columns * i + j;
@@ -56,8 +56,7 @@ void buildGraph(int64_t lines, int64_t columns, vector<int64_t> &weight, vector<
 
 
 bool buildReversedAnswer(int64_t columns, int64_t startLine, int64_t startColumn, int64_t finishLine,
-                         int64_t finishColumn, vector<int64_t> &parent,
-                         vector<pair<int64_t, int64_t> > &answer) {
+                         int64_t finishColumn, vector<int64_t> &parent, vector<pair<int64_t, int64_t> > &answer) {
     while (finishColumn != startColumn || finishLine != startLine) {
         answer.emplace_back(finishLine, finishColumn);
         int64_t index = parent[finishLine * columns + finishColumn];
@@ -73,15 +72,15 @@ bool buildReversedAnswer(int64_t columns, int64_t startLine, int64_t startColumn
 
 
 void bfs(vector<vector<int64_t> > &graph, vector<int64_t> &distance, vector<queue<int64_t> > &levels,
-         vector<bool> &used, vector<int64_t> &weight, vector<int64_t> &parent) {
-    int64_t index = 0, activeNodesCount = 1;
+         vector<bool> &used, vector<int8_t> &weight, vector<int64_t> &parent) {
+    int64_t level = 0, activeNodesCount = 1;
     while (activeNodesCount > 0) {
-        while (levels[index % (MAX_EDGE_WEIGHT + 1)].empty()) {
-            ++index;
+        while (levels[level % (MAX_EDGE_WEIGHT + 1)].empty()) {
+            ++level;
         }
 
-        int64_t currentNode = levels[index % (MAX_EDGE_WEIGHT + 1)].front();
-        levels[index % (MAX_EDGE_WEIGHT + 1)].pop();
+        int64_t currentNode = levels[level % (MAX_EDGE_WEIGHT + 1)].front();
+        levels[level % (MAX_EDGE_WEIGHT + 1)].pop();
 
         --activeNodesCount;
 
@@ -91,7 +90,7 @@ void bfs(vector<vector<int64_t> > &graph, vector<int64_t> &distance, vector<queu
 
         used[currentNode] = true;
         for (int64_t child: graph[currentNode]) {
-            int64_t childWeight = weight[child];
+            int8_t childWeight = weight[child];
             if (distance[currentNode] + childWeight < distance[child]) {
                 distance[child] = distance[currentNode] + childWeight;
                 parent[child] = currentNode;
@@ -107,12 +106,8 @@ int main() {
     vector<queue<int64_t> > levels(MAX_EDGE_WEIGHT);
     int64_t lines, columns;
     cin >> lines >> columns;
-    if (not cin){
-        cerr << "Incorrect input";
-        exit(1);
-    }
 
-    vector<int64_t> weight(lines * columns);
+    vector<int8_t> weight(lines * columns);
     vector<int64_t> parent(lines * columns,
                            NULL_PARENT); // index of parent node from the shortest path (from start cell to finish cell)
     vector<int64_t> distance(lines * columns, LLONG_MAX); // from start to finish
@@ -122,14 +117,10 @@ int main() {
     for (int64_t i = 0; i < lines * columns; ++i) {
         cin >> weight[i];
     }
-    if (not cin){
-        cerr << "Incorrect input";
-        exit(1);
-    }
 
     int64_t startLine, startColumn, finishLine, finishColumn;
     cin >> startLine >> startColumn >> finishLine >> finishColumn;
-    if (not cin){
+    if (not cin || startLine < 0 || startLine >= lines || finishLine < 0 || finishColumn >= columns) {
         cerr << "Incorrect input";
         exit(1);
     }
